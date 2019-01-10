@@ -9,7 +9,7 @@ import * as DebuggerExtension from './Debugger/extension';
 import * as fs from 'fs';
 import * as LanguageServer from './LanguageServer/extension';
 import * as os from 'os';
-import * as Telemetry from './telemetry';
+// import * as Telemetry from './telemetry';
 import * as util from './common';
 import * as vscode from 'vscode';
 
@@ -31,7 +31,7 @@ let disposables: vscode.Disposable[] = [];
 export async function activate(context: vscode.ExtensionContext): Promise<CppToolsApi & CppToolsExtension> {
     initializeTemporaryCommandRegistrar();
     util.setExtensionContext(context);
-    Telemetry.activate();
+    // Telemetry.activate();
     util.setProgress(0);
 
     // Initialize the DebuggerExtension and register the related commands and providers.
@@ -44,7 +44,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<CppToo
 
 export function deactivate(): Thenable<void> {
     DebuggerExtension.dispose();
-    Telemetry.deactivate();
+    // Telemetry.deactivate();
     disposables.forEach(d => d.dispose());
 
     if (languageServiceDisabled) {
@@ -66,7 +66,7 @@ async function processRuntimeDependencies(): Promise<void> {
                 showOutputChannel();
 
                 // Send the failure telemetry since postInstall will not be called.
-                sendTelemetry(await PlatformInformation.GetPlatformInformation());
+                // sendTelemetry(await PlatformInformation.GetPlatformInformation());
             }
         // The extension have been installed and activated before.
         } else {
@@ -80,7 +80,7 @@ async function processRuntimeDependencies(): Promise<void> {
             handleError(error);
             
             // Send the failure telemetry since postInstall will not be called.
-            sendTelemetry(await PlatformInformation.GetPlatformInformation());
+            // sendTelemetry(await PlatformInformation.GetPlatformInformation());
         }
     }
 }
@@ -188,33 +188,33 @@ function touchInstallLockFile(): Promise<void> {
 function handleError(error: any): void {
     let installationInformation: InstallationInformation = getInstallationInformation();
     installationInformation.hasError = true;
-    installationInformation.telemetryProperties['stage'] = installationInformation.stage;
+    // installationInformation.telemetryProperties['stage'] = installationInformation.stage;
     let errorMessage: string;
 
     if (error instanceof PackageManagerError) {
         let packageError: PackageManagerError = error;
 
-        installationInformation.telemetryProperties['error.methodName'] = packageError.methodName;
-        installationInformation.telemetryProperties['error.message'] = packageError.message;
+        // installationInformation.telemetryProperties['error.methodName'] = packageError.methodName;
+        // installationInformation.telemetryProperties['error.message'] = packageError.message;
 
         if (packageError.innerError) {
             errorMessage = packageError.innerError.toString();
-            installationInformation.telemetryProperties['error.innerError'] = util.removePotentialPII(errorMessage);
+            // installationInformation.telemetryProperties['error.innerError'] = util.removePotentialPII(errorMessage);
         } else {
             errorMessage = packageError.message;
         }
 
         if (packageError.pkg) {
-            installationInformation.telemetryProperties['error.packageName'] = packageError.pkg.description;
-            installationInformation.telemetryProperties['error.packageUrl'] = packageError.pkg.url;
+        // installationInformation.telemetryProperties['error.packageName'] = packageError.pkg.description;
+        // installationInformation.telemetryProperties['error.packageUrl'] = packageError.pkg.url;
         }
 
         if (packageError.errorCode) {
-            installationInformation.telemetryProperties['error.errorCode'] = util.removePotentialPII(packageError.errorCode);
+        // installationInformation.telemetryProperties['error.errorCode'] = util.removePotentialPII(packageError.errorCode);
         }
     } else {
         errorMessage = error.toString();
-        installationInformation.telemetryProperties['error.toString'] = util.removePotentialPII(errorMessage);
+        // installationInformation.telemetryProperties['error.toString'] = util.removePotentialPII(errorMessage);
     }
 
     let outputChannelLogger: Logger = getOutputChannelLogger();
@@ -233,11 +233,11 @@ function sendTelemetry(info: PlatformInformation): boolean {
     let installBlob: InstallationInformation = getInstallationInformation();
     const success: boolean = !installBlob.hasError;
 
-    installBlob.telemetryProperties['success'] = success.toString();
+    // installBlob.telemetryProperties['success'] = success.toString();
 
     if (info.distribution) {
-        installBlob.telemetryProperties['linuxDistroName'] = info.distribution.name;
-        installBlob.telemetryProperties['linuxDistroVersion'] = info.distribution.version;
+    // installBlob.telemetryProperties['linuxDistroName'] = info.distribution.name;
+    // installBlob.telemetryProperties['linuxDistroVersion'] = info.distribution.version;
     }
 
     if (success) {
@@ -249,9 +249,9 @@ function sendTelemetry(info: PlatformInformation): boolean {
         }
     }
 
-    installBlob.telemetryProperties['osArchitecture'] = info.architecture;
+    // installBlob.telemetryProperties['osArchitecture'] = info.architecture;
 
-    Telemetry.logDebuggerEvent("acquisition", installBlob.telemetryProperties);
+    // Telemetry.logDebuggerEvent("acquisition", installBlob.telemetryProperties);
 
     return success;
 }
@@ -262,7 +262,7 @@ async function postInstall(info: PlatformInformation): Promise<void> {
     outputChannelLogger.appendLine("Finished installing dependencies");
     outputChannelLogger.appendLine("");
 
-    const installSuccess: boolean = sendTelemetry(info);
+    // const installSuccess: boolean = sendTelemetry(info);
 
     // If there is a download failure, we shouldn't continue activating the extension in some broken state.
     if (!installSuccess) {
